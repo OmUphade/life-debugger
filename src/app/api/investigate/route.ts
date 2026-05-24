@@ -4,11 +4,58 @@ import { runBehaviorQuery } from "@/lib/coral";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
+function isRelevantQuestion(question: string) {
+  const keywords = [
+    "burnout",
+    "productivity",
+    "focus",
+    "work",
+    "deadline",
+    "stress",
+    "meeting",
+    "task",
+    "github",
+    "discord",
+    "calendar",
+    "notion",
+    "email",
+    "fatigue",
+    "deep work",
+  ];
+
+  return keywords.some((keyword) => question.toLowerCase().includes(keyword));
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
 
     const { question } = body;
+
+    if (!isRelevantQuestion(question)) {
+      return Response.json({
+        success: true,
+
+        data: {
+          rootCause:
+            "No behavioral investigation pattern detected in the submitted query.",
+
+          observations: [
+            "Life Debugger specializes in productivity and behavioral analysis.",
+            "The submitted prompt does not correlate with connected behavioral systems.",
+            "Try asking about burnout, focus, productivity, deadlines, or work patterns.",
+          ],
+
+          recommendations: [
+            "Ask questions related to productivity or behavioral signals.",
+            "Reference work habits, focus patterns, or communication overload.",
+            "Use investigation prompts tied to digital activity patterns.",
+          ],
+        },
+
+        liveData: null,
+      });
+    }
 
     const liveData = runBehaviorQuery() as {
       late_commits: number;
